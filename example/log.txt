@@ -1,0 +1,146 @@
+INPUT PARAMETERS:
+Namespace(B2=None, N4=1000, N6=1000, S4=1, UMIs=None, adapters1=None, b3=0.05, center6=0, chromnames='hg19.chrom.sizes', e4='PeakXus', fastq='CTCF_replicate1.sorted.bam', genome2=None, k4=4, l3=5, l6='PeakXus', l_l3=60, m4=10, m5=20, m6=100, matrixhits=None, maxw7=50, minw7=4, ml4=17, ms4=-8, n3=1, n4=1, o5=1, outdir='./', p3=1.0, p7=1, q2=20, s3=1, skip0=0, t2=1, title5='PeakXus', verbosity=1, w3=5, w4=100, wg7='/mnt/DataDisk1/genomes/hg19/wg.fa')INPUT PARAMETERS:
+Namespace(B2=None, N4=1000, N6=1000, S4=1, UMIs=None, adapters1=None, b3=0.05, center6=0, chromnames='hg19.chrom.sizes', e4='PeakXus', fastq='CTCF_replicate1.sorted.bam', genome2=None, k4=4, l3=5, l6='PeakXus', l_l3=60, m4=10, m5=20, m6=100, matrixhits=None, maxw7=50, minw7=4, ml4=17, ms4=-8, n3=1, n4=1, o5=1, outdir='./', p3=1.0, p7=1, q2=20, s3=1, skip0=0, t2=1, title5='PeakXus', verbosity=1, w3=5, w4=100, wg7='/mnt/DataDisk1/genomes/hg19/wg.fa')Testing that input files exist...done!
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 11.9061150551 s
+Creating peak regions... Creating peak regions took 149.832855225 s
+Estimating background... Estimating background took 55.8776981831 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 7.66292786598 s
+Creating peak regions... Creating peak regions took 145.879440069 s
+Estimating background... Estimating background took 33.975497961 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 8.40683197975 s
+Creating peak regions... Creating peak regions took 118.571871042 s
+Estimating background... Estimating background took 36.0614891052 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 4.30934596062 s
+Creating peak regions... Creating peak regions took 111.007709026 s
+Estimating background... Estimating background took 17.7185239792 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 7.52577400208 s
+Creating peak regions... Creating peak regions took 108.293382168 s
+Estimating background... Estimating background took 35.5585041046 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 6.21886110306 s
+Creating peak regions... Creating peak regions took 99.4887878895 s
+Estimating background... Estimating background took 29.0732870102 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 6.22077894211 s
+Creating peak regions... Creating peak regions took 94.7681879997 s
+Estimating background... Estimating background took 25.557849884 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 4.01341795921 s
+Creating peak regions... Creating peak regions took 88.0991821289 s
+Estimating background... Estimating background took 17.052738905 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 5.72793793678 s
+Creating peak regions... Creating peak regions took 84.9402360916 s
+Estimating background... Estimating background took 24.6100299358 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 5.25418710709 s
+Creating peak regions... Creating peak regions took 82.3059408665 s
+Estimating background... Estimating background took 24.7782568932 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 4.6729221344 s
+Creating peak regions... Creating peak regions took 77.192399025 s
+Estimating background... Estimating background took 21.7396960258 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 6.26885199547 s
+Creating peak regions... Creating peak regions took 81.6515729427 s
+Estimating background... Estimating background took 30.810781002 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 5.99282383919 s
+Creating peak regions... Creating peak regions took 77.8998129368 s
+Estimating background... Estimating background took 27.9749338627 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 2.8318259716 s
+Creating peak regions... Creating peak regions took 64.5258541107 s
+Estimating background... Estimating background took 11.7846338749 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 3.87804794312 s
+Creating peak regions... Creating peak regions took 63.4660019875 s
+Estimating background... Estimating background took 17.8922331333 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 4.79915118217 s
+Creating peak regions... Creating peak regions took 59.6989951134 s
+Estimating background... Estimating background took 22.3421998024 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 3.53263092041 s
+Creating peak regions... Creating peak regions took 52.3887109756 s
+Estimating background... Estimating background took 16.8186099529 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 4.42927503586 s
+Creating peak regions... Creating peak regions took 49.3993780613 s
+Estimating background... Estimating background took 22.5218920708 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 2.66312098503 s
+Creating peak regions... Creating peak regions took 44.9597709179 s
+Estimating background... Estimating background took 11.8345451355 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 4.01113677025 s
+Creating peak regions... Creating peak regions took 38.4678769112 s
+Estimating background... Estimating background took 15.2475171089 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 0.060122013092 s
+Creating peak regions... Creating peak regions took 30.8208398819 s
+Estimating background... Estimating background took 0.389364004135 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 3.4673781395 s
+Creating peak regions... Creating peak regions took 34.3348531723 s
+Estimating background... Estimating background took 17.5526430607 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 1.24991297722 s
+Creating peak regions... Creating peak regions took 28.4756560326 s
+Estimating background... Estimating background took 6.80032992363 s
+
+
+Processing ./CTCF_replicate1.sorted.bam
+Reading in data... Reading data took 1.39022397995 s
+Creating peak regions... Creating peak regions took 26.9044020176 s
+Estimating background... Estimating background took 6.18409895897 s

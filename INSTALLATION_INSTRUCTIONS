@@ -1,0 +1,36 @@
+
+PeakXus is implemented with Python. Before you are able to use PeakXus, the following Python-packages should be installed:
+
+matplotlib - http://matplotlib.org/ (version tested with: 1.3.1)
+Biopython - http://biopython.org/wiki/Main_Page (version: 1.63)
+NumPy - http://www.numpy.org/ (version: 1.8.2)
+SciPy - http://www.scipy.org/ (version: 0.16.0)
+Pysam - http://pysam.readthedocs.org/en/latest/ (version: 0.8.4) (also requires Samtools (http://samtools.sourceforge.net/))
+
+The analysis is divided into two subtasks: peak calling and allele specific binding (ASB) analysis.
+The easiest way to perform peak calling is to use the PeakXus-script found from this directory. It is a
+wrapper for several scripts and is capable of producing informative graphical results on top of the peak list
+even starting from a fastq-file. For peak calling only from a readily aligned, sorted and indexed bam-file, the
+Python libraries (+ Samtools) are enough for the program to run. But if you wish to perform the adapter trimming
+and alignment steps, also the following tools need to be installed:
+
+cutadapt - http://cutadapt.readthedocs.org/en/stable/guide.html
+bwa - http://bio-bwa.sourceforge.net/
+
+To use the PeakXus.py script the src/ directory should be added to $PATH or the .py-files from the src/ directory
+should be copied to a directory already listed in your $PATH. If we assume you have unpacked PeakXus to directory
+home/PeakXus/, you should add the following line to your ~/.bashrc or whatever file you use to set your environment variables
+
+export PATH=$PATH:home/PeakXus/src
+
+You can access the documentation of the peak caller by reading README_PEAKXUS from this directory, or by typing
+
+> PeakXus.py -h
+
+Documentation of the ASB analysis can be read from README_ASB and by typing
+
+> testASB.py -h
+
+or
+
+> SNPEffectToMotif.py -h
