@@ -112,8 +112,8 @@ def PeakXus():
     parser.add_argument("chromnames",help="Full path to a file containing chromosome names and sizes each chromosome on its own line, name and size separated by tab.",type=str)
     
     #INPUT FILES, OPTIONAL
-    parser.add_argument("--UMIs",help="Full path to a file containing all UMI-labels. The file should have two tab-separated columns, first is the UMI name (e.g. BC1) and second is the actual label sequence (e.g. ATTAG). If this argument is not provided, UMIs are not used in the analysis.",type=str,nargs=1,default=None)
-    parser.add_argument("--matrixhits",help="Full path to a gff-file containing the locations of the HARS sites (High-Affinity Recognition Sequence) in the appropropriate reference genome. If this file is not provided, part of the results are not calculated.",type=str,nargs=1,default=None)
+    parser.add_argument("--UMIs",help="Full path to a file containing all UMI-labels. The file should have two tab-separated columns, first is the UMI name (e.g. BC1) and second is the actual label sequence (e.g. ATTAG). If this argument is not provided, UMIs are not used in the analysis.",type=str,default=None)
+    parser.add_argument("--matrixhits",help="Full path to a gff-file containing the locations of the HARS sites (High-Affinity Recognition Sequence) in the appropropriate reference genome. If this file is not provided, part of the results are not calculated.",type=str,default=None)
     
 
     #0 FASTQC, input parameters
@@ -268,7 +268,7 @@ def PeakXus():
 
     #creating a UMI-input file for peak calling and later applications (only one column,the actual UMI-label).
     if a.UMIs!=None:
-        with open(a.UMIs[0],'rb') as csvfile:
+        with open(a.UMIs,'rb') as csvfile:
             r = csv.reader(csvfile,delimiter="\t")
             with open(a.outdir+"UMI.bc",'wb') as outfile:
                 w = csv.writer(outfile,delimiter="\t")
@@ -278,7 +278,7 @@ def PeakXus():
     if a.verbosity==1: print "Calling peaks..."
     numtests = 0
         
-    pc_call ="peakC6.py "+a.outdir+full_bam+" "+a.outdir+" "+a.chromnames
+    pc_call ="peakC6.py "+full_bam+" "+a.outdir+" "+a.chromnames
 
     pc_call += " -w "+str(a.w3)+" -l_l "+str(a.l_l3)+" -l "+str(a.l3)+" -b "+str(a.b3)+" -s "+str(a.s3)+" -n "+str(a.n3)+" -p "+str(a.p3)
     if a.UMIs!=None: pc_call += " -u "+a.outdir+"UMI.bc"
@@ -393,7 +393,7 @@ def testinput(a):
     if a.UMIs!=None:
         try:
             aux = []
-            with open(a.UMIs[0],'rb') as csvfile:
+            with open(a.UMIs,'rb') as csvfile:
                 r = csv.reader(csvfile,delimiter="\t")
                 for row in r: aux = [row[0],row[1]]
         except Exception as e:
