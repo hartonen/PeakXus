@@ -236,10 +236,10 @@ def SNPEffectToMotif():
             i += 1
 
     #calculating the pearson correlation coefficient between -log(p) and affinity change
-    r_pearson,p_pearson = pearsonr(xaxis,yaxis)
+    r_pearson,p_pearson = pearsonr(np.abs(xaxis),yaxis)
 
     #plotting
-    sc = plt.scatter(xaxis,yaxis,s=np.pi*10*np.ones(sitecount),c=colors,label=args.legend)
+    sc = plt.scatter(np.abs(xaxis),yaxis,s=np.pi*10*np.ones(sitecount),c=colors,label=args.legend)
     t = [0,0.2,0.4,0.6,0.8,1.0]
 
     #if imprintfile is provided, plotting green circles around SNPs at ICRs
@@ -252,7 +252,7 @@ def SNPEffectToMotif():
                 y_imprinted.append(yaxis[i])
         sc2 = plt.scatter(x_imprinted,y_imprinted,s=np.pi*30*np.ones(sitecount),facecolors='none',edgecolors='g',linewidth=2)
     plt.ylabel("-log(p-value)",fontsize=20,weight='bold')
-    plt.xlabel("Affinity change (S_ref-S_alt)",fontsize=20,weight='bold')
+    plt.xlabel("|Affinity change| (|S_ref-S_alt|)",fontsize=20,weight='bold')
     if args.legend!=None: plt.legend(loc=2)
     plt.suptitle("r = "+str(round(r_pearson,2))+", p-value = "+str('{:.2e}'.format(p_pearson)))
     plt.tight_layout()
@@ -367,7 +367,7 @@ def createHTML(asb_count,SNP_overlap_HARS,SNP_flanking_HARS,args):
     f.write('</style>\n<body>')
 
 
-    
+    prefix = args.outdir.split('/')[-1]
     #########
     #Heading#
     #########
@@ -389,12 +389,12 @@ def createHTML(asb_count,SNP_overlap_HARS,SNP_flanking_HARS,args):
 
     f.write('<table style="width:100%">')
     f.write("<tr>")
-    f.write('<td><div class="image"><img src="'+args.outdir+'refallele_ratio_vs_affinity_change.png" alt="Reference allele ratio vs affinity change" style="width:800px;height:600px;"></div></td>') 
-    f.write('<td><div class="image"><img src="'+args.outdir+'pval_vs_affinity_change.png" alt="Peak size histogram" style="width:800px;height:600px;"></div></td>')
+    f.write('<td><div class="image"><img src="'+prefix+'refallele_ratio_vs_affinity_change.png" alt="Reference allele ratio vs affinity change" style="width:800px;height:600px;"></div></td>') 
+    f.write('<td><div class="image"><img src="'+prefix+'pval_vs_affinity_change.png" alt="p-value vs affinity change" style="width:800px;height:600px;"></div></td>')
     f.write("</tr>")
     f.write('<tr>')
     f.write('<td><div class="caption">Reference allele ratio as a function of binding sequence affinity change. Y-axis shows reference allele ratio while x-axis is the affinity change (reference minus alternate sequence affinity). SNPs with p-value > '+str(args.t)+' are filtered out. Red dots represent SNPs where alternate allele creates a CG-site to the sequence but reference does not. Yellow dots represent SNPs where sequence with reference allele has an extra CG. Other SNPs are black. Value of Pearson correlation coefficient (r) along with the corresponding p-value are shown above the figure.</div></td>')
-    f.write('<td><div class="caption">-log(p-value) as a function of binding sequence affinity change. Y-axis shows negative logarithm of the p-value while x-axis is the affinity change (reference minus alternate sequence affinity). SNPs with p-value > '+str(args.t)+' are filtered out. Red dots represent SNPs where alternate allele creates a CG-site to the sequence but reference does not. Yellow dots represent SNPs where sequence with reference allele has an extra CG. Other SNPs are black. Value of Pearson correlation coefficient (r) along with the corresponding p-value are shown above the figure.</div></td>')
+    f.write('<td><div class="caption">-log(p-value) as a function of the absolute value of the binding sequence affinity change. Y-axis shows negative logarithm of the p-value while x-axis is the absolute value of the affinity change (reference minus alternate sequence affinity). SNPs with p-value > '+str(args.t)+' are filtered out. Red dots represent SNPs where alternate allele creates a CG-site to the sequence but reference does not. Yellow dots represent SNPs where sequence with reference allele has an extra CG. Other SNPs are black. Value of Pearson correlation coefficient (r) along with the corresponding p-value are shown above the figure.</div></td>')
     f.write('</tr>')
     f.write("</table>")
 
@@ -472,7 +472,7 @@ def readASB(path,threshold,reads,AR,test,outfile):
         r = csv.reader(csvfile,delimiter='\t')
         with open(outfile,'wb') as out:
             w = csv.writer(out,delimiter='\t')
-            w.writerow(["#chrom","location","SNP_id","peak_location","REF_allele","ALT_allele","N_REF","N_ALT","allreads_REF","allreads_ALT","p-value"])
+            w.writerow(["#chrom","location","SNP_id","peak_location","REF_allele","ALT_allele","p-value","N_REF","N_ALT","allreads_REF","allreads_ALT"])
             for row in r:
                 if row[0].count('#')>0: continue
                 #filtering out variations that aren't snps
@@ -507,7 +507,7 @@ def readASB(path,threshold,reads,AR,test,outfile):
                         #N2= total num of reads in chip
                         pval = winflat(wgs_refcount,wgs_refcount+wgs_altcount,refreads,refreads+altreads)
                     if pval==0: pval = 0.0000000000000001
-                    row = row[0:5]+[pval]+row[6:]
+                    row = row[0:5]+[pval]+row[5:]
                 else:
                     #this means p-value is calculated from umi counts
                     refumis = float(row[-4])
@@ -523,7 +523,7 @@ def readASB(path,threshold,reads,AR,test,outfile):
                         #N2= total num of reads in chip
                         pval = winflat(wgs_refcount,wgs_refcount+wgs_altcount,refumis,refumis+altumis)
                     if pval==0: pval = 0.0000000000000001
-                    row = row[0:5]+[pval]+row[6:]
+                    row = row[0:5]+[pval]+row[5:]
 
                 if threshold<0:
                     aux = abs(threshold)
@@ -532,7 +532,7 @@ def readASB(path,threshold,reads,AR,test,outfile):
                     if pval>threshold: continue
                 if chrom not in asb: asb[chrom] = [row]
                 else: asb[chrom].append(row)
-                w.writerow(row)
+                w.writerow([chrom]+row)
 
     return asb,counter
 #end

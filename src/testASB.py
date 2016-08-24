@@ -36,7 +36,6 @@ def testASB():
     parser.add_argument("snpfile",help="Full path to a vcf-file containing the SNPs. Either one file containing all SNPs or one file for each chromosome.",type=str,nargs='+')
 
     #OPTIONAL PARAMETERS
-    parser.add_argument("-s",help="Sorting order of peaks, 0=score(default), 1=statistics, 2=signal, 3=p-value.",type=int,choices=[0,1,2,3],default=0)
     parser.add_argument("-m",help="Maximum distance for a SNP from a peak edge for it to be considered to overlap with a peak (default=5 bps).",type=int,default=5)
     parser.add_argument("-n",help="Number of parallel processes used (default=1).",type=int,default=1)
     parser.add_argument("--nofilter",help="If 1, locations with 0 reads on either of the alleles are included to the output, if 0 these locations are filtered out (default=0).",type=int,choices=[0,1],default=0)
@@ -44,7 +43,6 @@ def testASB():
 
     args = parser.parse_args()
 
-    sortindex = -1-args.s
 
     #################
     #READING IN DATA#
@@ -58,9 +56,6 @@ def testASB():
             if row[0].count('chromosome')>0: continue
             peaks.append(row)
             if row[0] not in chroms: chroms.add(row[0])
-    
-    if args.s==3: peaks = sorted(peaks,key=itemgetter(sortindex),reverse=False)
-    else: peaks = sorted(peaks,key=itemgetter(sortindex),reverse=True)
 
     #creating a dictionary of peaks
     peakdict = {}
@@ -69,9 +64,11 @@ def testASB():
     #value = [start,end,id]
     for p in peaks:
         chrom = p[0]
-        if chrom not in peakdict: peakdict[chrom] = [p[1:4]]
-        else: peakdict[chrom].append(p[1:4])
+        if chrom not in peakdict: peakdict[chrom] = [[int(float(p[1])),int(float(p[2])),p[3],p[4]]]
+        else: peakdict[chrom].append([int(float(p[1])),int(float(p[2])),p[3],p[4]])
 
+    #making sure that the peaks are sorted by the start coordinate
+    for chrom in peakdict: peakdict[chrom].sort(key=lambda x: x[1])
     umis = set()
     with open(args.umifile[0],'rb') as csvfile:
         r = csv.reader(csvfile,delimiter='\t')
@@ -106,6 +103,8 @@ def testASB():
                             #peak and SNP do overlap
                             overlapsites[chrom].append([pos,snp_id,p[2],REF_snp,ALT_snp])
                             break
+                        if (end+args.m)>pos: break
+
     else:
 
         #getting the list of chromosomes for which we have the SNPs
@@ -119,7 +118,7 @@ def testASB():
                     break
 
         pool = mp.Pool(processes=args.n)
-        res = [pool.apply_async(testOverlap,args=(args.snpfile[i],peakdict[chromlist[i]],chromlist[i],args.m,chroms)) for i in range(0,len(chromlist))]
+        res = [pool.apply_async(testOverlap,args=(args.snpfile[i],peakdict[chromlist[i]],chromlist[i],args.m)) for i in range(0,len(chromlist))]
         res = [p.get() for p in res]
         for r in res: overlapsites[r[0]] = r[1]
 
@@ -148,7 +147,6 @@ def testASB():
             letters_allreads = {REF_snp:0.0,ALT_snp:0.0} #same statistics for all reads i.e. no umis
             for pileupcolumn in samfile.pileup(chrom,pos,pos+1):
                 #now looping through all reads that overlap with position pos
-                #print pileupcolumn
                 if pos-1!=pileupcolumn.pos: continue
                 for pileupread in pileupcolumn.pileups:
                     if pileupread.is_del: continue
@@ -188,27 +186,35 @@ def testASB():
         print ""
 
 
-def testOverlap(snpfile,peaks,chrom,m,chroms):
-
+def testOverlap(snpfile,peaks,chrom,m):
+    #snpfile = path to the file containing the SNPs
+    #peaks = dictionary containing the called peaks
+    #chrom = the chromosome to be analyzed
+    #m = maximum distance from peak edge to snp
     overlapsites = [chrom,[]]
+
     with open(snpfile,'rb') as csvfile:
         r = csv.reader(csvfile,delimiter='\t')
+        last_peak_index = 0 #index where to start searching for an overlapping peak
         for row in r:
             chrom = row[0]
-            if chrom not in chroms: return overlapsites
-            pos = int(row[1])
+            pos = int(row[1]) #SNP position
+            if pos<(peaks[0][0]-m): continue
             snp_id = row[2]
             REF_snp = row[3]
             ALT_snp = row[4]
-
+                
             #testing proximity of peaks
-            for p in peaks:
-                start = int(float(p[0]))
-                end = int(float(p[1]))
+            for i in range (last_peak_index,len(peaks)):
+                start = peaks[i][0] #peak start position
+                end = peaks[i][1] #peak end position
+
                 if (start-m)<=pos and (end+m)>=pos:
                     #peak and SNP do overlap
-                    overlapsites[1].append([pos,snp_id,p[2],REF_snp,ALT_snp])
-                    if m<=5: break
+                    overlapsites[1].append([pos,snp_id,peaks[i][2],REF_snp,ALT_snp])
+                    last_peak_index = i
+                if (end+m)>pos: break
+
     return overlapsites
 
 testASB()
