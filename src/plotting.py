@@ -23,7 +23,16 @@ def plotHeatMap(E,x,y,outname,color='seismic',title=None,xlabel=None,ylabel=None
     gs = gridspec.GridSpec(100,100,top=0.94,bottom=0.11,left=0.04,right=0.9)
     ax = fig.add_subplot(gs[:,0:91])
     axC = fig.add_subplot(gs[:,93:99])
-    quadmesh = ax.pcolormesh(x,y,E,cmap=cm.seismic,vmin=-1*np.abs(E).max(),vmax=np.abs(E).max())
+
+    #transforming the heatmap values for better visualization
+    E_new = np.zeros(shape=(E.shape[0],E.shape[1]))
+    ind = 0
+
+    while ind<E.shape[0]:
+        E_new[ind,:] = np.log(E[ind,:]+1)
+        E_new[ind+1,:] = -1*np.log(abs(E[ind+1,:])+1)
+        ind += 2
+    quadmesh = ax.pcolormesh(x,y,E_new,cmap=cm.seismic,vmin=-1*np.abs(E_new).max(),vmax=np.abs(E_new).max())
     ax.axis([x.min(), x.max(), y.min(), y.max()])
     fig.colorbar(quadmesh,ax=ax,cax=axC)
     if title!=None: ax.set_title(title,fontsize=26,weight='bold')

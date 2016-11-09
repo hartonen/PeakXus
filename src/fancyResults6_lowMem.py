@@ -65,6 +65,7 @@ def fancyResults():
     parser.add_argument("--ctest",help="g if g-test is used as distance for clustering, euc if euclidian distance.",type=str,choices=['g','euc'],default='g')
     parser.add_argument("-u","--UMIs",help="Full path to the file containing true UMIs (one barcode per row).",type=str,default=None)
     parser.add_argument("-l","--umilen",help="Length of the used UMI-labels (default=5).",type=int,default=5)
+    parser.add_argument("--skipclustering",help="If 1, clustering is skipped, otherwise 0 (default).",type=int,choices=[0,1],default=0)
 
 
     args = parser.parse_args()
@@ -141,15 +142,16 @@ def fancyResults():
     scores = []
     for p in peaks:
         sizes.append(int(float(p[4])))
-        scores.append(float(p[6]))
+        if len(p)<7: scores.append(float(p[-1]))
+        else: scores.append(float(p[6]))
 
     #plotting sizes
     histo = np.histogram(np.array(sizes),bins=range(0,max(sizes)+1))
-    plot1d(histo[1][:-1],[histo[0]],args.outdir+"/peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname,yscale='log',Nyticks=None,xscale='log')
+    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname,yscale='log',Nyticks=None,xscale='log')
 
     #plotting scores
     histo = np.histogram(np.array(scores),bins=range(0,int(max(scores))+1))
-    plot1d(histo[1][:-1],[histo[0]],args.outdir+"/peak_score_histo.png",xlabel="Peak score",title=args.expname,yscale='log',Nyticks=None,xscale='log')
+    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_score_histo.png",xlabel="Peak score",title=args.expname,yscale='log',Nyticks=None,xscale='log')
 
     ########################
     #HEATMAP OF TOP N PEAKS#
@@ -209,29 +211,43 @@ def fancyResults():
     #CLUSTERING THE TOP PEAKS#
     ##########################
 
-    #The read 5'-end count distributions areound the top peaks are clustered using the k-medoids algorithm from Biopython
     if args.UMIs!=None: ylabel = "Average UMI 5'-end count"
     else: ylabel = "Average read 5'-end count"
     x = np.array([i for i in range(-w/2,w/2+1)])
-
     y = np.array([i for i in range(0,int(np.shape(E)[0]))])
 
-    E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.pseudo,args.nproc,args.ctest)
+    if args.skipclustering==0:
 
-    #Plotting the cluster centroids
-    ind = 0
-    for c in centroids:
-        ind += 1
-        plot1d(x,[c[1],c[2]],args.outdir+"Centroid"+str(ind)+"_top_"+str(N)+".png",xlabel="Distance from peak summit",ylabel=ylabel,colors=['r','b'],title="Centroid="+str(ind)+", "+str(len(np.where(clusters==c[0])[0]))+" peaks")
+        #The read 5'-end count distributions areound the top peaks are clustered using the k-medoids algorithm from Biopython
 
-    #Plotting a heatmap of each cluster
-    ind = 0
-    for c in set(clusters):
-        ind += 1
-        E_aux = E_clustered[np.where(E_clustered[:,-1]==c)]
-        plotHeatMap(E_aux[:,:-1],x,np.array([i for i in range(0,int(np.shape(E_aux[:,:-1])[0]))]),args.outdir+"Heatmap_top_"+str(N)+"cluster"+str(ind)+".png",xlabel="Distance from peak summit [bps]",ylabel="Cluster"+str(ind),xticks=[-w/2,0,w/2])
+
+        E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.pseudo,args.nproc,args.ctest)
+
+        #Plotting the cluster centroids
+        ind = 0
+        for c in centroids:
+            ind += 1
+            plot1d(x,[c[1],c[2]],args.outdir+"Centroid"+str(ind)+"_top_"+str(N)+".png",xlabel="Distance from peak summit",ylabel=ylabel,colors=['r','b'],title="Centroid="+str(ind)+", "+str(len(np.where(clusters==c[0])[0]))+" peaks")
+
+        #Plotting a heatmap of each cluster
+        ind = 0
+        for c in set(clusters):
+            ind += 1
+            E_aux = E_clustered[np.where(E_clustered[:,-1]==c)]
+            plotHeatMap(E_aux[:,:-1],x,np.array([i for i in range(0,int(np.shape(E_aux[:,:-1])[0]))]),args.outdir+"Heatmap_top_"+str(N)+"cluster"+str(ind)+".png",xlabel="Distance from peak summit [bps]",ylabel="Cluster"+str(ind),xticks=[-w/2,0,w/2])
 
     plotHeatMap(E,x,y,args.outdir+"Heatmap_top_"+str(N)+".png",xlabel="Distance from peak summit [bps]",xticks=[-w/2,0,w/2],title=args.expname)
+
+
+    #print "top 10 peaks:"
+    #ind = 0
+    #while ind<E.shape[0]:
+    #    print ind,
+    #    print " : ",
+    #    print E[ind,:]
+    #    ind += 2
+    #print "Average counts:"
+    #print np.mean(np.abs(E[range(0,len(E),2)]),axis=0)
 
 
     #############################################
@@ -361,8 +377,8 @@ def fancyResults():
     #############################################
     #CLUSTERING THE TOP PEAKS WITH A MOTIF MATCH#
     #############################################
-    #this is deprecated as a futile feature
-    if False:
+
+    if args.skipclustering==0:
         E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.ctest,args.nproc)
 
         #Plotting the cluster centroids
@@ -478,8 +494,8 @@ def fancyResults():
     #######################################################
     #CLUSTERING THE TOP PEAKS WITH AN ORIENTED MOTIF MATCH#
     #######################################################
-    #this is deprecated as a futile feature
-    if False:
+
+    if args.skipclustering==0:
         E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.pseudo,args.nproc,args.ctest)
 
         #Plotting the cluster centroids

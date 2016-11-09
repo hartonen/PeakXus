@@ -222,7 +222,7 @@ def PeakXus():
         #2) ALIGNING
         if a.verbosity==1: print "Aligning...",
         
-        full_bam = a.outdir[0]+aln_inname.split('/')[:-6]+"_sorted_filtered.bam"
+        full_bam = a.outdir+aln_inname.split('/')[-1][:-6]+"_sorted_filtered.bam"
 
         if a.B2==None:
             #This means no UMIs are used
