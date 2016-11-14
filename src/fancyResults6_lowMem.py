@@ -216,7 +216,7 @@ def fancyResults():
     x = np.array([i for i in range(-w/2,w/2+1)])
     y = np.array([i for i in range(0,int(np.shape(E)[0]))])
 
-    if args.skipclustering==0:
+    if args.k>1:
 
         #The read 5'-end count distributions areound the top peaks are clustered using the k-medoids algorithm from Biopython
 
@@ -237,18 +237,6 @@ def fancyResults():
             plotHeatMap(E_aux[:,:-1],x,np.array([i for i in range(0,int(np.shape(E_aux[:,:-1])[0]))]),args.outdir+"Heatmap_top_"+str(N)+"cluster"+str(ind)+".png",xlabel="Distance from peak summit [bps]",ylabel="Cluster"+str(ind),xticks=[-w/2,0,w/2])
 
     plotHeatMap(E,x,y,args.outdir+"Heatmap_top_"+str(N)+".png",xlabel="Distance from peak summit [bps]",xticks=[-w/2,0,w/2],title=args.expname)
-
-
-    #print "top 10 peaks:"
-    #ind = 0
-    #while ind<E.shape[0]:
-    #    print ind,
-    #    print " : ",
-    #    print E[ind,:]
-    #    ind += 2
-    #print "Average counts:"
-    #print np.mean(np.abs(E[range(0,len(E),2)]),axis=0)
-
 
     #############################################
     #AVERAGE READ DENSITY PROFILE OF TOP N PEAKS#
@@ -378,8 +366,8 @@ def fancyResults():
     #CLUSTERING THE TOP PEAKS WITH A MOTIF MATCH#
     #############################################
 
-    if args.skipclustering==0:
-        E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.ctest,args.nproc)
+    if args.k>1:
+        E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.pseudo,args.nproc,args.ctest)
 
         #Plotting the cluster centroids
         x = np.array([i for i in range(-w/2,w/2+1)])
@@ -495,7 +483,7 @@ def fancyResults():
     #CLUSTERING THE TOP PEAKS WITH AN ORIENTED MOTIF MATCH#
     #######################################################
 
-    if args.skipclustering==0:
+    if args.k>1:
         E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.pseudo,args.nproc,args.ctest)
 
         #Plotting the cluster centroids

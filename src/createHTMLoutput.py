@@ -271,7 +271,7 @@ def createHTMLoutput():
 
 
     f.write('<div style="background-color:#ccccff; color:white; padding:20px;">')
-    f.write('<p class="white">If you use PeakXus in your work, please cite:<br>Hartonen T, Sahu B, Dave K, Kivioja T and Taipale J, PeakXus: Comprehensive Transcription Factor Binding Site Discovery From ChIP-Nexus and ChIP-exo Experiments, to be published.</p>')
+    f.write('<p class="white">If you use PeakXus in your work, please cite:<br>Hartonen, T., Sahu, B., Dave, K., Kivioja, T., & Taipale, J. (2016). PeakXus: comprehensive transcription factor binding site discovery from ChIP-Nexus and ChIP-Exo experiments. Bioinformatics, 32(17), i629-i638.</p>')
     f.write('</div>')
 
     #end

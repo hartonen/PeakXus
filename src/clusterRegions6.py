@@ -45,14 +45,21 @@ def clusterRegions(tRegions_plus,tRegions_minus,k,npass,pseudo,nproc,test):
 
     #k-medoids clustering
     clusters,error,nfound = kmedoids(dm,nclusters=k,npass=npass,initialid=None)
-    
-    tRegions = np.zeros((N,L+1))
+
+    #the plus and minus strand read counts are merged to one array for the final output
+    tRegions = np.zeros((2*N,L+1))
     ind = 0
-    for i in range(0,len(clusters)):
+    newind = 0
+
+    while ind<N:
         #adding the cluster id to the last element of the corresponding histogram
-        tRegions[ind,:-1] = tRegions_plus[i,:]-tRegions_minus[i,:]
-        tRegions[ind,-1] = clusters[i]
+        
+        tRegions[newind,:-1] = tRegions_plus[ind,:]
+        tRegions[newind,-1] = clusters[ind]
+        tRegions[newind+1,:-1] = -tRegions_minus[ind,:]
+        tRegions[newind+1,-1] = clusters[ind]
         ind += 1
+        newind += 2
     #calculating the cluster centroids
     IDs = set(clusters)
     centroids = []
