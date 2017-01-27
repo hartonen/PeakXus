@@ -210,16 +210,16 @@ class tPoints:
 
         pool = mp.Pool(processes=nproc)
 
-        res = [pool.apply_async(backgroundModelPositions,args=(self.tPoints[chrom][k,3:3+(self.tPoints[chrom][k,2]/2)],self.tPoints[chrom][k,3+(self.tPoints[chrom][k,2]/2):3+2*(self.tPoints[chrom][k,2]/2)],p_threshold,(self.tPoints[chrom][k,2]/2),yates,pseudo)) for k in range(0,len(self.tPoints[chrom]))]
+        res = [pool.apply_async(backgroundModelPositions,args=(self.tPoints[chrom][k,3:3+int(self.tPoints[chrom][k,2]/2)],self.tPoints[chrom][k,3+int(self.tPoints[chrom][k,2]/2):3+2*int(self.tPoints[chrom][k,2]/2)],p_threshold,(self.tPoints[chrom][k,2]/2),yates,pseudo)) for k in range(0,len(self.tPoints[chrom]))]
 
         #gathering the results from parallel tests
         res = [p.get() for p in res]
         for k in range(0,len(res)):
             if res[k][0] == True: self.tPoints[chrom][k,-1] = -1
             else:
-                current_start = self.tPoints[chrom][k,0]
-                current_end = self.tPoints[chrom][k,1]
-                current_middle = (current_start+current_end)/2
+                current_start = int(self.tPoints[chrom][k,0])
+                current_end = int(self.tPoints[chrom][k,1])
+                current_middle = int(current_start+current_end)/2
                 if yates==0:
                     #G-test
                     self.tPoints[chrom][k,-2] = res[k][1]
@@ -258,13 +258,7 @@ class tPoints:
                 current_end = self.tPoints[c][i,1]
                 current_middle = (current_end+current_start)/2
                 current_S = self.tPoints[c][i,-1]
-                #current_S = current_score*(np.sum(self.read_counts_plus[c][current_start:current_middle+1])+np.sum(self.read_counts_minus[c][current_middle:current_end+1])-np.sum(self.read_counts_plus[c][current_middle:current_end+1])-np.sum(self.read_counts_minus[c][current_start:current_middle+1]))
-                #index of the peak candidate with highest score
-                #print "-----------------------"
-                #print "current index="+str(i),
-                #print ": s="+str(current_start),
-                #print " | e="+str(current_end)
-                #print "current score="+str(current_S)
+
                 smallest_p_index = i #index of the largest score
                 j = i
                 deleted = []
@@ -272,15 +266,11 @@ class tPoints:
                     j -= 1
                     if self.tPoints[c][j,-2]==-1: continue
                     #keeping track of all the indices that are to be deleted
-                    #print "candidate index="+str(j),
                     candidate_start = int(self.tPoints[c][j,0])
                     candidate_end = int(self.tPoints[c][j,1])
                     candidate_middle = (candidate_end+candidate_start)/2
                     candidate_S = self.tPoints[c][j,-1]
-                    #candidate_S = candidate_score*(np.sum(self.read_counts_plus[c][candidate_start:candidate_middle+1])+np.sum(self.read_counts_minus[c][candidate_middle:candidate_end+1])-np.sum(self.read_counts_plus[c][candidate_middle:candidate_end+1])-np.sum(self.read_counts_minus[c][candidate_start:candidate_middle+1]))
-                    #print ": s="+str(candidate_start),
-                    #print " | e="+str(candidate_end)
-                    #print "candidate score="+str(candidate_S),
+
                     if len(current_site.intersection(set(range(candidate_start,candidate_end+1))))>0:
                         #this means the sites do overlap
                         if (candidate_S>current_S):
@@ -291,8 +281,7 @@ class tPoints:
                         #this means that there were no overlapping peak candidates
                         break
                 #now marking the overlapping peaks with a high p-value as deleted
-                #print "| deleted: ",
-                #print deleted
+
                 if allowoverlap==0:
                     for d in deleted: self.tPoints[c][d,-2] = -1
             

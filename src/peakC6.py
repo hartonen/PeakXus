@@ -130,12 +130,10 @@ def peakC():
 
         reads = ReadContainer()
 
-        reads.readSam(args.infile,save_umi,args.outdir,args.umilen,args.allreads,chrom)
+        #if readSam returns False there are not reads mapping to chrom and we can proceed to next chromosome
+        if not reads.readSam(args.infile,save_umi,args.outdir,args.umilen,args.allreads,chrom): continue
         reads.sortReads()
 
-        #this is just for testing!!
-        
-        #reads.saveReadHisto("chr21",'--',1,1,args.outdir[0]+"/all_5primeHisto_-.igv")
         read_counter += reads.getReadCount()
 
         if args.timing==1:
@@ -164,8 +162,6 @@ def peakC():
         if args.onlysignal==1: peak_regions.calcTransitions_counts(chrom,reads,args.allpairs,args.nproc)
         else: peak_regions.calcTransitions(chrom,reads,args.allpairs,args.nproc,args.allreads)
 
-        #this is just for testing
-        #peak_regions.saveTransitions(args.outdir+"/all_t_points.tsv")
         umi_counter += peak_regions.getUMIcount()
 
         if args.timing==1:

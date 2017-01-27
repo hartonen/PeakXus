@@ -75,9 +75,8 @@ class ReadContainer:
             self.covered[chrom][strand].add(int(fiveprime))
             self.reads[chrom][strand].append(fiveprime)
             if save_umi!=None and allreads==1: self.allreads[chrom][strand].append(fiveprime)
-            #self.read_number += 1
 
-            #saving umi's if needed
+            #saving umis if needed
             if save_umi!=None: 
                 
                 self.umis[chrom] = {}
@@ -93,7 +92,6 @@ class ReadContainer:
             if len(self.reads[chrom][strand])<1:
                 self.reads[chrom][strand].append(fiveprime)
                 self.covered[chrom][strand].add(int(fiveprime))
-                #self.read_number += 1
                 if save_umi!=None:
                     self.umis[chrom][strand][fiveprime] = set()
                     self.umis[chrom][strand][fiveprime].add(umi)
@@ -102,7 +100,6 @@ class ReadContainer:
                 if save_umi==None:
                     self.reads[chrom][strand].append(fiveprime)
                     self.covered[chrom][strand].add(fiveprime)
-                    #self.read_number += 1
                 else:
                     #if there are no reads mapped to the same position, read is saved automatically
                     
@@ -111,14 +108,12 @@ class ReadContainer:
                         self.covered[chrom][strand].add(fiveprime)
                         self.umis[chrom][strand][fiveprime] = set()
                         self.umis[chrom][strand][fiveprime].add(umi)
-                        #self.read_number += 1
                     else:
                         #here we check if the same umi is already used for this position
                         if umi not in self.umis[chrom][strand][fiveprime]:
                             self.reads[chrom][strand].append(fiveprime)
                             self.covered[chrom][strand].add(fiveprime)
                             self.umis[chrom][strand][fiveprime].add(umi)
-                            #self.read_number += 1
         self.read_number += 1.0
         
     #end addRead
@@ -126,7 +121,9 @@ class ReadContainer:
     def readSam(self,path,save_umi,outdir,umilen,allreads,ref_chrom):
         #read a sam file and add contents to self
         #path = path to the input sam/bam file
-
+        #returns False if there are no reads mapping to either of the strands in 'ref_chrom' in file 'path', els returns True
+        hasReadsPlus = False
+        hasReadsMinus = False
 
         #Reading in the reference umi-sequences from file
         if save_umi!=None:
@@ -145,8 +142,7 @@ class ReadContainer:
             if read.is_unmapped: continue
             chrom = samfile.getrname(read.rname)
 
-            #start = read.pos
-            #end = start+read.rlen
+
             strand = '+'
             if read.is_reverse: strand = '-'
 
@@ -162,7 +158,13 @@ class ReadContainer:
             else: fiveprime = read.aend#read.aend+read.rlen
 
             if fiveprime<0: continue
+            if strand=='+': hasReadsPlus = True
+            else: hasReadsMinus = True
             self.addRead(chrom,strand,fiveprime,allreads,save_umi,umi)
+
+        return (hasReadsPlus and hasReadsMinus)
+
+
         
     #end readSam
 
