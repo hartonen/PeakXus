@@ -114,7 +114,7 @@ def PeakXus():
     #INPUT FILES, OPTIONAL
     parser.add_argument("--UMIs",help="Full path to a file containing all UMI-labels. The file should have two tab-separated columns, first is the UMI name (e.g. BC1) and second is the actual label sequence (e.g. ATTAG). If this argument is not provided, UMIs are not used in the analysis.",type=str,default=None)
     parser.add_argument("--matrixhits",help="Full path to a gff-file containing the locations of the HARS sites (High-Affinity Recognition Sequence) in the appropropriate reference genome. If this file is not provided, part of the results are not calculated.",type=str,default=None)
-    
+    parser.add_argument("--blacklist",help="Full path to a bed-file containing the start and end coordinates of blacklisted genomic regions. Peaks overlapping these regions are filtered out from the results if blacklist is given.",type=str,default=None)
 
     #0 FASTQC, input parameters
     group0 = parser.add_argument_group('0. FASTQC','These arguments are passed to the FastQC-tool.')
@@ -243,23 +243,6 @@ def PeakXus():
         #    system("samtools index "+full_bam)
         if a.verbosity==1: print "succesful!"
 
-        #separating chromosomes to distinct files
-        #processing the files in parallel if possible to speed up the analysis
-        
-
-
-
-        #if nproc>1:
-        #    pool = mp.Pool(processes=nproc)
-        #    res = [pool.apply_async(samtools,args=("samtools view -b "+a.outdir[0]+aln_inname.split('/')[-1][:-6]+"_sorted_filtered.bam"+" "+i+" > "+a.outdir[0]+i+".bam && samtools index "+a.outdir[0]+i+".bam",a.verbosity)) for i in chroms]
-        #    for r in res: r.get()
-        #    pool.close()
-        #    pool.terminate()
-        #    pool.join()
-        #else:
-        #    for i in chroms:
-        #        if a.verbosity==1: print "samtools view -b "+a.outdir[0]+aln_inname.split('/')[-1][:-6]+"_sorted_filtered.bam"+" "+i+" > "+a.outdir[0]+i+".bam && samtools index "+a.outdir[0]+i+".bam"
-        #        system("samtools view -b "+a.outdir[0]+aln_inname.split('/')[-1][:-6]+"_sorted_filtered.bam"+" "+i+" > "+a.outdir[0]+i+".bam && samtools index "+a.outdir[0]+i+".bam")
     else:
         #This means that the input file is already aligned and in bam-format
         full_bam = a.fastq
@@ -295,6 +278,12 @@ def PeakXus():
     system("mergeIGV.py "+a.outdir+"chr*.igv "+a.outdir+"all_transition_points_nofdr.igv")
     #Removing the auxiliary files that have the peak calling peaks in separate files for different chromosomes
     system("rm "+a.outdir+"chr*.igv")
+
+    #if a bed-file containing blacklisted genomic regions is provided, peaks overlapping the blacklisted regions are filtered out
+    if a.blacklist!=None:
+        system("removeOverlappingPeaks.py "+a.outdir+"all_transition_points_nofdr.igv "+a.blacklist+" "+a.outdir+"all_transitions_points_filtered.igv")
+        system("mv "+a.outdir+"all_transition_points_nofdr.igv "+a.outdir+"all_transition_points_nofdr_nofilter.igv")
+        system("mv "+a.outdir+"all_transitions_points_filtered.igv "+a.outdir+"all_transition_points_nofdr.igv")
 
     #Calculating the false discovery rates with the Benjamini-Hochberg procedure
     system("FDR.py "+a.outdir+"all_transition_points_nofdr.igv "+a.outdir+"all_transition_points.igv -m "+str(numtests))
