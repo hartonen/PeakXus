@@ -109,7 +109,7 @@ def PeakXus():
     #INPUT FILES, MANDATORY
     parser.add_argument("fastq",help="Full path to the input fastq/bam-file. If input is a bam-file, alignment-step is skipped and the pipeline starts straight from peak calling. File type is determined based on the file name extension.",type=str)
     parser.add_argument("outdir",help="Full path to output directory. This has to exist and be writable!.",type=str)
-    parser.add_argument("chromnames",help="Full path to a file containing chromosome names and sizes each chromosome on its own line, name and size separated by tab.",type=str)
+    parser.add_argument("chromnames",help="Full path to a file containing chromosome names and sizes each chromosome on its own line, name and size separated by tab. Notice that chromosome names should must the convention chr1,chr2,... instead of 1,2...",type=str)
     
     #INPUT FILES, OPTIONAL
     parser.add_argument("--UMIs",help="Full path to a file containing all UMI-labels. The file should have two tab-separated columns, first is the UMI name (e.g. BC1) and second is the actual label sequence (e.g. ATTAG). If this argument is not provided, UMIs are not used in the analysis.",type=str,default=None)
@@ -331,7 +331,8 @@ def PeakXus():
         #Creating fasta-input for MEME
         system("seqs_under_peaks.py "+a.wg7+" "+a.outdir+"all_transition_points_sorted.igv "+a.outdir+"top"+str(a.N4)+"_peaks.fasta -N "+str(a.N4)+" -w 50")
         #Calling MEME
-        system("meme "+a.outdir+"top"+str(a.N4)+"_peaks.fasta -oc "+a.outdir+"/meme_results/ -minw "+str(a.minw7)+" -maxw "+str(a.maxw7)+" -p "+str(a.p7)+" -dna -mod anr -nmotifs 5 -maxsites "+str(a.N4)+" -revcomp -nostatus")
+        if a.p7>1: system("meme "+a.outdir+"top"+str(a.N4)+"_peaks.fasta -oc "+a.outdir+"/meme_results/ -minw "+str(a.minw7)+" -maxw "+str(a.maxw7)+" -p "+str(a.p7)+" -dna -mod anr -nmotifs 5 -maxsites "+str(a.N4)+" -revcomp -nostatus")
+        else: system("meme "+a.outdir+"top"+str(a.N4)+"_peaks.fasta -oc "+a.outdir+"/meme_results/ -minw "+str(a.minw7)+" -maxw "+str(a.maxw7)+" -dna -mod anr -nmotifs 5 -maxsites "+str(a.N4)+" -revcomp -nostatus")
 
     #CREATING THE HTML-OUTPUT
 
@@ -352,6 +353,43 @@ def samtools(call_string,verbosity):
 def testinput(a):
     #this function test that the most crucial input parameters are sensible
     
+    #but first testing that the required python libraries can be imported
+
+    try:
+        import numpy
+    except Exception as e:
+        print e
+        print "Unable to import numpy! Terminating..."
+        return False
+
+    try:
+        import scipy
+    except Exception as e:
+        print e
+        print "Unable to import scipy! Terminating..."
+        return False
+
+    try:
+        import matplotlib
+    except Exception as e:
+        print e
+        print "Unable to import matplotlib! Terminating..."
+        return False
+
+    try:
+        import pysam
+    except Exception as e:
+        print e
+        print "Unable to import pysam! Terminating..."
+        return False
+        
+    try:
+        import Bio
+    except Exception as e:
+        print e
+        print "Unable to import Biopython! Terminating..."
+        return False
+
     #1 Reference genome
     if a.genome2==None and a.fastq[-5:]=='fastq':
         print "Reference genome index not given! Terminating..."
@@ -363,7 +401,7 @@ def testinput(a):
         try:
             f = open(a.wg7,'rb')
             f.close()
-        except Exception:
+        except Exception as e:
             print e
             print "Reference genome file cannot be opened! Terminating..."
             return False
