@@ -40,7 +40,7 @@ def fancyResults():
     parser = argparse.ArgumentParser()
     
     #MANDATORY PARAMETERS
-    parser.add_argument("peakfile",help="Full path to an igv-file containing called peaks.",type=str)
+    parser.add_argument("peakfile",help="Full path to an igv-file containing called peaks (peaks must be presorted in the desired order!).",type=str)
     parser.add_argument("readfile",help="Full path to the bam-file used as input for peak calling.",type=str)
     parser.add_argument("outdir",help="Full path to output directory.",type=str)
     
@@ -86,13 +86,15 @@ def fancyResults():
     #reading in peaks
     peaks = []
     chroms = set()
+    count = 0
     with open(args.peakfile,'rb') as csvfile:
         r = csv.reader(csvfile,delimiter='\t')
         for row in r:
             if row[0].count('chromosome')>0: continue
             peaks.append(row)
             if row[0] not in chroms: chroms.add(row[0])
-    
+            count += 1
+            if count>=3*N: break
     topPeaks = peaks[:N]
 
     #reading in motifs
@@ -124,7 +126,6 @@ def fancyResults():
 
     #reading in sequences
     samfile = pysam.Samfile(args.readfile,'rb')
-
     if args.UMIs!=None:
         #reading in UMIs
         umis = set()
@@ -142,16 +143,16 @@ def fancyResults():
     scores = []
     for p in peaks:
         sizes.append(int(float(p[4])))
-        if len(p)<7: scores.append(float(p[-1]))
-        else: scores.append(float(p[6]))
+        scores.append(float(p[6]))
 
     #plotting sizes
     histo = np.histogram(np.array(sizes),bins=range(0,max(sizes)+1))
-    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname,yscale='log',Nyticks=None,xscale='log')
+    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname)#,yscale='log',Nyticks=None,xscale='log')
 
     #plotting scores
-    histo = np.histogram(np.array(scores),bins=range(0,int(max(scores))+1))
-    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_score_histo.png",xlabel="Peak score",title=args.expname,yscale='log',Nyticks=None,xscale='log')
+    histo = np.histogram(np.array(scores),bins=1000)
+    
+    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_score_histo.png",xlabel="Peak score",title=args.expname,xscale='log')#,yscale='log',Nyticks=None,xscale='log')
 
     ########################
     #HEATMAP OF TOP N PEAKS#
@@ -171,7 +172,7 @@ def fancyResults():
             #(fiveprime end location,strand,UMI-label)
             #This is used to assure that each UMI is counted only once
         if summit-w/2-100<0: continue
-        for read in samfile.fetch(chrom,summit-w/2-100,summit+2/2+1+100):
+        for read in samfile.fetch(chrom,summit-w/2-100,summit+w/2+1+100):
             if read.is_unmapped: continue
             strand = '+'
             if read.is_reverse: strand = '-'
@@ -216,7 +217,7 @@ def fancyResults():
     x = np.array([i for i in range(-w/2,w/2+1)])
     y = np.array([i for i in range(0,int(np.shape(E)[0]))])
 
-    if args.k>1:
+    if args.skipclustering<1:
 
         #The read 5'-end count distributions areound the top peaks are clustered using the k-medoids algorithm from Biopython
 
@@ -366,7 +367,7 @@ def fancyResults():
     #CLUSTERING THE TOP PEAKS WITH A MOTIF MATCH#
     #############################################
 
-    if args.k>1:
+    if args.skipclustering<0:
         E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.pseudo,args.nproc,args.ctest)
 
         #Plotting the cluster centroids
@@ -483,7 +484,7 @@ def fancyResults():
     #CLUSTERING THE TOP PEAKS WITH AN ORIENTED MOTIF MATCH#
     #######################################################
 
-    if args.k>1:
+    if args.skipclustering<0:
         E_clustered,centroids,clusters = cr.clusterRegions(E[range(0,len(E),2),:],np.abs(E[range(1,len(E),2),:]),args.k,args.npass,args.pseudo,args.nproc,args.ctest)
 
         #Plotting the cluster centroids
