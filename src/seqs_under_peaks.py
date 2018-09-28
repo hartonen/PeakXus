@@ -36,6 +36,7 @@ def seqs_under_peaks():
     parser.add_argument("-N","--numpeaks",help="How many of the top peaks are analyzed (default=100).",type=int,default=100)
     parser.add_argument("-w","--peakwidth",help="Width of the sequence around the peak summit that is saved (w+1+w), default=25.",type=int,default=25)
     parser.add_argument("-b","--background",help="1, if a same sized random set of sequences is output, 0 (=default) otherwise.",type=int,default=0,choices=[0,1])
+    parser.add_argument("-v","--varlen",help="If yes, region sizes are taken from the input bed-file and -w is overridden, if no (=default), argument -w is used to determine region size.", type=str,choices=['no','yes'],default='no')
 
     args = parser.parse_args()
 
@@ -47,17 +48,18 @@ def seqs_under_peaks():
     #[[chr,peak location,peak width],...]
 
     #reading in the peaks
-    with open(args.peaks,'rb') as peakfile:
+    with open(args.peaks,'r') as peakfile:
         r = csv.reader(peakfile,delimiter='\t')
         for row in r:
             if row[0].count('chromosome')>0: continue
             chrom = row[0]
             start = int(float(row[1]))
             end = int(float(row[2]))
-            if end-start>1: loc = start+(end-start)/2
-            else: loc = start
-            
-            peaks.append([chrom,loc,end-start])
+            if args.varlen=='no':
+                if end-start>1: loc = start+(end-start)/2
+                else: loc = start
+                peaks.append([chrom,loc,end-start])
+            else: peaks.append([chrom,start,end])
 
     #selecting the required number of top peaks
     peaks = peaks[:N]
@@ -83,11 +85,16 @@ def seqs_under_peaks():
         seq = record.seq
         #saving the sequence for each peak in this chromosome
         for peak in top_peaks[chrom]:
-            sequences.append(seq[peak[0]-w:peak[0]+w])
+            if args.varlen=='no': sequences.append(seq[peak[0]-w:peak[0]+w])
+            else: sequences.append(seq[peak[0]:peak[1]])
             names.append(chrom+"_"+str(peak[0]))
             if args.background==1:
-                r = randint(0,len(seq)-2*w)
-                background.append(seq[r:r+2*w])
+                if args.varlen=='no':
+                    r = randint(0,len(seq)-2*w)
+                    background.append(seq[r:r+2*w])
+                else:
+                    r = randint(0,len(seq)-(peak[1]-peak[0]))
+                    background.append(seq[r:r+(peak[1]-peak[0])])
     handle.close()
 
     f = open(args.outname,'w')

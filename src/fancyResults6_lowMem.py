@@ -66,6 +66,7 @@ def fancyResults():
     parser.add_argument("-u","--UMIs",help="Full path to the file containing true UMIs (one barcode per row).",type=str,default=None)
     parser.add_argument("-l","--umilen",help="Length of the used UMI-labels (default=5).",type=int,default=5)
     parser.add_argument("--skipclustering",help="If 1, clustering is skipped, otherwise 0 (default).",type=int,choices=[0,1],default=0)
+    parser.add_argument("-s",help="Peak file column used as the peak score, numbering starting from 0 (default=6).",type=int,default=6)
 
 
     args = parser.parse_args()
@@ -138,21 +139,21 @@ def fancyResults():
     #########################
 
     #peak size (total UMI-count pointing towards the peak summit) is column 4, peak score is column number 6 (starting from 0)
+    if False:
+        sizes = []
+        scores = []
+        for p in peaks:
+            sizes.append(int(float(p[4])))
+            scores.append(float(p[args.s]))
 
-    sizes = []
-    scores = []
-    for p in peaks:
-        sizes.append(int(float(p[4])))
-        scores.append(float(p[6]))
+        #plotting sizes
+        histo = np.histogram(np.array(sizes),bins=range(0,max(sizes)+1))
+        plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname)#,yscale='log',Nyticks=None,xscale='log')
 
-    #plotting sizes
-    histo = np.histogram(np.array(sizes),bins=range(0,max(sizes)+1))
-    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname)#,yscale='log',Nyticks=None,xscale='log')
+        #plotting scores
+        histo = np.histogram(np.array(scores),bins=1000)
 
-    #plotting scores
-    histo = np.histogram(np.array(scores),bins=1000)
-    
-    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_score_histo.png",xlabel="Peak score",title=args.expname,xscale='log')#,yscale='log',Nyticks=None,xscale='log')
+        plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_score_histo.png",xlabel="Peak score",title=args.expname,xscale='log')#,yscale='log',Nyticks=None,xscale='log')
 
     ########################
     #HEATMAP OF TOP N PEAKS#
