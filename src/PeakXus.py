@@ -9,6 +9,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import print_function
+
 import argparse
 from os import system
 from sys import exit
@@ -183,9 +185,9 @@ def PeakXus():
     f.write(str(a))
     f.close()
 
-    if a.verbosity==1: print "Testing input parameters...",
+    if a.verbosity==1: print("Testing input parameters...",end="")
     if not testinput(a): exit(0)
-    if a.verbosity==1: print "succesful!"
+    if a.verbosity==1: print("succesful!")
 
     chroms = []
     with open(a.chromnames,'rb') as csvfile:
@@ -195,11 +197,11 @@ def PeakXus():
     #0) RUNNING FASTQC FOR QUALITY CHECK OF THE INPUT FILES
 
     if a.skip0==0:
-        if a.verbosity==1: print "Running FastQC...",
+        if a.verbosity==1: print("Running FastQC...",end='')
         system("mkdir "+str(a.outdir)+"/FastQC/")
         command = "fastqc "+a.fastq
         system(command+" -q -o "+str(a.outdir)+"/FastQC")
-        if a.verbosity==1: print "done!"
+        if a.verbosity==1: print("done!")
 
     #This defines the number of parallel samtools-processes used
     nproc = max([a.t2,a.n3,a.p7])
@@ -209,7 +211,7 @@ def PeakXus():
 
         aln_inname = a.fastq
         if a.adapters1!=None:
-            if a.verbosity==1: print "Trimming adapters...",
+            if a.verbosity==1: print("Trimming adapters...",end='')
             ca_call = "~/.local/bin/cutadapt -m 22 -O 4 -e 0.2 "
             for adapter in a.adapters1: ca_call += "-a "+adapter+" "
             ca_call += a.fastq
@@ -217,10 +219,10 @@ def PeakXus():
             ca_call += a.fastq[:-6]+"_trimmed.fastq"
             system(ca_call)
             aln_inname = a.fastq[:-6]+"_trimmed.fastq"
-            if a.verbosity==1: print "succesful!"
+            if a.verbosity==1: print("succesful!")
 
         #2) ALIGNING
-        if a.verbosity==1: print "Aligning...",
+        if a.verbosity==1: print("Aligning...",end='')
         
         full_bam = a.outdir+aln_inname.split('/')[-1][:-6]+"_sorted_filtered.bam"
 
@@ -241,7 +243,7 @@ def PeakXus():
         #        system(aln_call)
         #    system("samtools merge "+full_bam+" "+a.outdir[0]+"BC*_"+aln_inname.split('/')[-1][:-6]+"_sorted_filtered.bam")
         #    system("samtools index "+full_bam)
-        if a.verbosity==1: print "succesful!"
+        if a.verbosity==1: print("succesful!")
 
     else:
         #This means that the input file is already aligned and in bam-format
@@ -258,7 +260,7 @@ def PeakXus():
                 for row in r: w.writerow([row[1]])
 
     #Peak calling is performed by calling the PeakC6.py-script
-    if a.verbosity==1: print "Calling peaks..."
+    if a.verbosity==1: print("Calling peaks...",end='')
     numtests = 0
         
     pc_call ="peakC6.py "+full_bam+" "+a.outdir+" "+a.chromnames
@@ -266,7 +268,7 @@ def PeakXus():
     pc_call += " -w "+str(a.w3)+" -l_l "+str(a.l_l3)+" -l "+str(a.l3)+" -b "+str(a.b3)+" -s "+str(a.s3)+" -n "+str(a.n3)+" -p "+str(a.p3)
     if a.UMIs!=None: pc_call += " -u "+a.outdir+"UMI.bc"
 
-    if a.verbosity==1: print pc_call
+    if a.verbosity==1: print(pc_call)
     system(pc_call)
     with open(a.outdir+"numtests.txt",'r') as csvfile:
         r = csv.reader(csvfile,delimiter="\t")
@@ -291,7 +293,7 @@ def PeakXus():
     #Sorting the transition points according to the peak score
     system("sort -k7,7gr "+a.outdir+"all_transition_points.igv > "+a.outdir+"all_transition_points_sorted.igv")
 
-    if a.verbosity==1: print "succesful!"
+    if a.verbosity==1: print("succesful!")
 
     #Creating igv-files that show the 5'-end count distributions of UMIs/reads
     if a.UMIs!=None:
@@ -304,7 +306,7 @@ def PeakXus():
 
     #4 READ COUNT DENSITIES AROUND PEAKS
 
-    if a.verbosity==1: print "Plotting results...",
+    if a.verbosity==1: print("Plotting results...",end='')
 
         
     if a.matrixhits!=None: fr_call = "fancyResults6_lowMem.py "+a.outdir+"all_transition_points_sorted.igv "+full_bam+" "+a.outdir+" --motiffile "+a.matrixhits+" -N "+str(a.N4)+" -m "+str(a.m4)+" -w "+str(a.w4)+" -e "+str(a.e4)+" -n "+str(a.n4)+" -k "+str(a.k4)+" -S "+str(a.S4)+" -ms "+str(a.ms4)+" -ml "+str(a.ml4)+" -l "+str(a.l3)
@@ -324,7 +326,7 @@ def PeakXus():
         if a.N6==None: cd_call = "cumul_peak_dist_from_motif.py "+a.matrixhits+" "+a.outdir+"dist_from_motif_m="+str(a.m6)+"_N=all.png "+a.outdir+"all_transition_points_sorted.igv -p g -l "+a.l6+" -m "+str(a.m6)+" --center "+str(a.center6)
         else: cd_call = "cumul_peak_dist_from_motif.py "+a.matrixhits+" "+a.outdir+"dist_from_motif_m="+str(a.m6)+"_N="+str(a.N6)+".png "+a.outdir+"all_transition_points_sorted.igv -p g -l "+a.l6+" -m "+str(a.m6)+" -N "+str(a.N6)+" --center "+str(a.center6)
         system(cd_call)
-    if a.verbosity==1: print "succesful!"
+    if a.verbosity==1: print("succesful!")
 
     #7 MEME
     if a.wg7!=None:
@@ -340,13 +342,13 @@ def PeakXus():
     if a.matrixhits!=None: html_call += " --motifFigs 1"
     system(html_call)
 
-    if a.verbosity!=None: print "PeakXus succesfully terminated!"
+    if a.verbosity!=None: print("PeakXus succesfully terminated!")
 
 #end
 
 def samtools(call_string,verbosity):
     
-    if verbosity==1: print call_string
+    if verbosity==1: print(call_string)
     system(call_string)
     return 1
 
@@ -358,52 +360,52 @@ def testinput(a):
     try:
         import numpy
     except Exception as e:
-        print e
-        print "Unable to import numpy! Terminating..."
+        print(e)
+        print("Unable to import numpy! Terminating...")
         return False
 
     try:
         import scipy
     except Exception as e:
-        print e
-        print "Unable to import scipy! Terminating..."
+        print(e)
+        print("Unable to import scipy! Terminating...")
         return False
 
     try:
         import matplotlib
     except Exception as e:
-        print e
-        print "Unable to import matplotlib! Terminating..."
+        print(e)
+        print("Unable to import matplotlib! Terminating...")
         return False
 
     try:
         import pysam
     except Exception as e:
-        print e
-        print "Unable to import pysam! Terminating..."
+        print(e)
+        print("Unable to import pysam! Terminating...")
         return False
         
     try:
         import Bio
     except Exception as e:
-        print e
-        print "Unable to import Biopython! Terminating..."
+        print(e)
+        print("Unable to import Biopython! Terminating...")
         return False
 
     #1 Reference genome
     if a.genome2==None and a.fastq[-5:]=='fastq':
-        print "Reference genome index not given! Terminating..."
+        print("Reference genome index not given! Terminating...")
         return False
          
     if a.wg7==None:
-        print "** Reference genome file in fasta-format not given, some of the graphical output is not produced."
+        print("** Reference genome file in fasta-format not given, some of the graphical output is not produced.")
     else:
         try:
             f = open(a.wg7,'rb')
             f.close()
         except Exception as e:
-            print e
-            print "Reference genome file cannot be opened! Terminating..."
+            print(e)
+            print("Reference genome file cannot be opened! Terminating...")
             return False
 
     #2 fastq/bam input
@@ -412,8 +414,8 @@ def testinput(a):
         f.close()
 
     except Exception as e:
-        print e
-        print "Input file cannot be opened! Terminating..."
+        print(e)
+        print("Input file cannot be opened! Terminating...")
         return False
 
     #3 UMI-file
@@ -424,8 +426,8 @@ def testinput(a):
                 r = csv.reader(csvfile,delimiter="\t")
                 for row in r: aux = [row[0],row[1]]
         except Exception as e:
-            print e
-            print "Error with the UMI-file! Terminating..."
+            print(e)
+            print("Error with the UMI-file! Terminating...")
             return False
         
     #4 chromosome names-file
@@ -436,8 +438,8 @@ def testinput(a):
             for row in r: aux = row[0]
 
     except Exception as e:
-        print e
-        print "Problem with chromnames-file! Terminating..."
+        print(e)
+        print("Problem with chromnames-file! Terminating...")
         return False
 
     #5 matrix hits-file
@@ -446,11 +448,11 @@ def testinput(a):
             f = open(a.matrixhits,'rb')
             f.close()
         except Exception as e:
-            print e
-            print "matrixhits-file could not be opened! Terminating..."
+            print(e)
+            print("matrixhits-file could not be opened! Terminating...")
             return False
     else:
-        print "** List of binding matrix hits to genome not provided, some of the graphical results are not printed."
+        print("** List of binding matrix hits to genome not provided, some of the graphical results are not printed.")
 
     return True
         

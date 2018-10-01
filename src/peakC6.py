@@ -9,6 +9,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see http://www.gnu.org/licenses/.
 
+from __future__ import print_function
+
 import argparse
 import sys
 import csv
@@ -104,7 +106,7 @@ def peakC():
     except Exception as detail:
         if args.verbosity==1:
             sys.stderr.write("Input file doesn't exist or output directory is not writable!")
-            print detail
+            print(detail)
         sys.exit(1)
 
     
@@ -146,7 +148,7 @@ def peakC():
 
         #Analysing one chromosome at a time saves memory
 
-        if args.verbosity==1: print chrom+": ",
+        if args.verbosity==1: print(chrom+": ",end='')
 
         #######################
         #Creating peak regions#

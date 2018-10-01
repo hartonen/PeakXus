@@ -36,6 +36,7 @@ def removeOverlappingPeaks():
         r = csv.reader(csvfile,delimiter='\t')
         for row in r:
             chrom = row[0]
+            #print(row)
             if chrom not in blacklist: blacklist[chrom] = [[int(float(row[1])),int(float(row[2]))]]
             else: blacklist[chrom].append([int(float(row[1])),int(float(row[2]))])
 
