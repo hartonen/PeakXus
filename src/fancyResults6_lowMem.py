@@ -139,21 +139,20 @@ def fancyResults():
     #########################
 
     #peak size (total UMI-count pointing towards the peak summit) is column 4, peak score is column number 6 (starting from 0)
-    if False:
-        sizes = []
-        scores = []
-        for p in peaks:
-            sizes.append(int(float(p[4])))
-            scores.append(float(p[args.s]))
+    sizes = []
+    scores = []
+    for p in peaks:
+        sizes.append(int(float(p[4])))
+        scores.append(float(p[args.s]))
 
-        #plotting sizes
-        histo = np.histogram(np.array(sizes),bins=range(0,max(sizes)+1))
-        plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname)#,yscale='log',Nyticks=None,xscale='log')
+    #plotting sizes
+    histo = np.histogram(np.array(sizes),bins=range(0,max(sizes)+1))
+    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname)#,yscale='log',Nyticks=None,xscale='log')
 
-        #plotting scores
-        histo = np.histogram(np.array(scores),bins=1000)
+    #plotting scores
+    histo = np.histogram(np.array(scores),bins=1000)
 
-        plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_score_histo.png",xlabel="Peak score",title=args.expname,xscale='log')#,yscale='log',Nyticks=None,xscale='log')
+    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_score_histo.png",xlabel="Peak score",title=args.expname,xscale='log')#,yscale='log',Nyticks=None,xscale='log')
 
     ########################
     #HEATMAP OF TOP N PEAKS#
