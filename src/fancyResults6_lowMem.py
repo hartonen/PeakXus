@@ -147,7 +147,7 @@ def fancyResults():
 
     #plotting sizes
     histo = np.histogram(np.array(sizes),bins=range(0,max(sizes)+1))
-    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs pointing towards peak summit",title=args.expname)#,yscale='log',Nyticks=None,xscale='log')
+    plot1d(histo[1][:-1],[histo[0]],args.outdir+"peak_size_histo.png",xlabel="UMIs per peak",title=args.expname)#,yscale='log',Nyticks=None,xscale='log')
 
     #plotting scores
     histo = np.histogram(np.array(scores),bins=1000)
@@ -212,8 +212,8 @@ def fancyResults():
     #CLUSTERING THE TOP PEAKS#
     ##########################
 
-    if args.UMIs!=None: ylabel = "Average UMI 5'-end count"
-    else: ylabel = "Average read 5'-end count"
+    if args.UMIs!=None: ylabel = "Average UMI count"
+    else: ylabel = "Average read count"
     x = np.array([i for i in range(-w/2,w/2+1)])
     y = np.array([i for i in range(0,int(np.shape(E)[0]))])
 
